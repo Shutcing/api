@@ -17,5 +17,13 @@ COPY . .
 ENV DISPLAY=:99 \
     PYTHONUNBUFFERED=1
 
+# Debug-вывод версий
+RUN google-chrome --version && chromedriver --version
+
+# Запуск с логированием Xvfb
+CMD sh -c "set -x; \
+           Xvfb :99 -screen 0 1920x1080x24 &>& /tmp/xvfb.log & \
+           gunicorn --bind 0.0.0.0:$PORT app:app"
+
 # Запуск через Gunicorn (WSGI)
 CMD sh -c "gunicorn --bind 0.0.0.0:$PORT app:app"
