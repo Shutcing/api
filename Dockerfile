@@ -4,12 +4,12 @@ FROM python:3.10-slim
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Устанавливаем системные зависимости для Chrome и ChromeDriver
-# Взято из рекомендаций и официальных источников
+# Устанавливаем системные зависимости, включая jq
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     unzip \
+    jq \  # <--- Добавляем jq
     # Зависимости для Chrome
     libglib2.0-0 \
     libnss3 \
@@ -34,26 +34,36 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Скачиваем и устанавливаем Google Chrome (стабильную версию)
+# (Оставляем как было)
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
-# Определяем версию установленного Chrome
-RUN CHROME_VERSION=$(google-chrome --version | cut -f 3 -d ' ' | cut -d '.' -f 1) \
-    && echo "Detected Chrome version: $CHROME_VERSION"
+# Определяем версию установленного Chrome (Опционально, но может быть полезно для логов)
+RUN google-chrome --version
 
-# Скачиваем и устанавливаем ChromeDriver соответствующей версии
-# Используем новый JSON эндпоинт для определения нужной версии ChromeDriver
-RUN LATEST_CHROMEDRIVER_VERSION=$(wget -qO- https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json | grep -oP '"linux64":\[{"platform":"linux64","url":"\K[^"]*') \
-    && echo "Attempting to download ChromeDriver from: $LATEST_CHROMEDRIVER_VERSION" \
-    && wget -q $LATEST_CHROMEDRIVER_VERSION -O /tmp/chromedriver.zip \
-    && unzip /tmp/chromedriver.zip -d /usr/local/bin/ \
-    # Убедимся, что извлеченный файл называется chromedriver и находится по ожидаемому пути
-    && mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
-    && rm -rf /tmp/chromedriver.zip /usr/local/bin/chromedriver-linux64 \
-    && chmod +x /usr/local/bin/chromedriver
+# --- ИСПРАВЛЕННЫЙ БЛОК СКАЧИВАНИЯ CHROMEDRIVER ---
+# Используем jq для извлечения URL последней стабильной версии ChromeDriver для linux64
+# Используем другой JSON эндпоинт, который может быть стабильнее
+RUN LATEST_CHROMEDRIVER_URL=$(wget -qO- https://googlechromelabs.github.io/chrome-for-testing/latest-stable-versions-with-downloads.json | jq -r '.channels.Stable.downloads.chromedriver[] | select(.platform=="linux64") | .url') \
+    && echo "Attempting to download ChromeDriver from: $LATEST_CHROMEDRIVER_URL" \
+    # Проверяем, что URL не пустой
+    && if [ -z "$LATEST_CHROMEDRIVER_URL" ]; then echo "Error: Could not find ChromeDriver download URL."; exit 1; fi \
+    # Скачиваем архив
+    && wget -q "$LATEST_CHROMEDRIVER_URL" -O /tmp/chromedriver.zip \
+    # Распаковываем архив (структура может быть разной, часто внутри есть папка)
+    && unzip /tmp/chromedriver.zip -d /tmp/ \
+    # Находим исполняемый файл chromedriver внутри распакованной папки и перемещаем его
+    && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
+    # Удаляем архив и распакованную папку
+    && rm -rf /tmp/chromedriver.zip /tmp/chromedriver-linux64 \
+    # Устанавливаем права на исполнение
+    && chmod +x /usr/local/bin/chromedriver \
+    # Проверяем версию chromedriver
+    && chromedriver --version
+# -----------------------------------------------------
 
 # Устанавливаем Python зависимости
 COPY requirements.txt requirements.txt
@@ -67,8 +77,4 @@ ENV PORT 10000
 EXPOSE 10000
 
 # Команда для запуска приложения через Gunicorn
-# Увеличьте timeout (-t), если ваши Selenium задачи выполняются долго
-# Количество workers (-w) подбирайте в зависимости от тарифа Render (CPU/RAM)
-# Используйте gevent или eventlet для асинхронной работы, если используете async/await глубоко,
-# но для вашего случая с ThreadPoolExecutor стандартные sync воркеры Gunicorn тоже подойдут.
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "--workers", "2", "--threads", "4", "--timeout", "120", "app:app"]
