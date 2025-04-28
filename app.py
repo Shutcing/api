@@ -29,14 +29,17 @@ async def getAnswer(prompt, model, image_url=None):
     async def _async_task():
         with ThreadPoolExecutor() as pool:
             chrome_options = Options()
-            chrome_options.add_argument("--headless=new")
+            chrome_options.add_argument("--headless=new") # Важно для серверной среды
+            chrome_options.add_argument("--no-sandbox") # Часто требуется в контейнерах
+            chrome_options.add_argument("--disable-dev-shm-usage") # Предотвращает проблемы с /dev/shm
+            chrome_options.add_argument("--disable-gpu") # Не нужен GPU на сервере
+            chrome_options.add_argument("--window-size=1920,1080") # Можно задать размер окна даже в headless
+            # Уберите user-agent, если он не критичен, или используйте актуальный
+            # chrome_options.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/1xx.0.0.0 Safari/537.36") # Пример для Linux
             chrome_options.add_argument("--disable-blink-features=AutomationControlled")
             chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
             chrome_options.add_experimental_option("useAutomationExtension", False)
-            chrome_options.add_argument("--no-sandbox")
-            chrome_options.add_argument("--disable-dev-shm-usage")
-            chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
-            chrome_options.add_argument("--log-level=3")
+            chrome_options.add_argument("--log-level=3") # Оставляем для уменьшения ло
 
             driver = await loop.run_in_executor(
                 pool,
