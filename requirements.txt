@@ -1,4 +1,5 @@
 Flask
 selenium
 uvicorn
+gunicorn
 # gunicorn, если предпочитаете его
