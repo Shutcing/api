@@ -166,15 +166,24 @@ async def getAnswer(prompt: str, model: str, image_url: str = None) -> str:
         logger.info("началась генерация")
 
         # Ожидание завершения генерации
+        # await loop.run_in_executor(
+        #     ThreadPoolExecutor(),
+        #     lambda: WebDriverWait(driver, 360).until(
+        #         EC.invisibility_of_element_located((By.CSS_SELECTOR, ".loader"))
+        #     )
+        # )
+
+        # Ждём появления текста в .output
         await loop.run_in_executor(
             ThreadPoolExecutor(),
             lambda: WebDriverWait(driver, 360).until(
-                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".loader"))
+                lambda d: d.find_element(By.CSS_SELECTOR, ".output").text.strip() != ""
             )
         )
+
         logger.info("получили результат")
         
-        await asyncio.sleep(6)
+        await asyncio.sleep(10)
 
         # Получение результата
         answer_element = await loop.run_in_executor(
