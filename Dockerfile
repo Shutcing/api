@@ -18,4 +18,4 @@ ENV DISPLAY=:99 \
     PYTHONUNBUFFERED=1
 
 # Запуск через Gunicorn (WSGI)
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "app:app"]
+CMD sh -c "gunicorn --bind 0.0.0.0:$PORT app:app"
