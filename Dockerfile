@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Системные пакеты и headless Chrome
+# Системные зависимости и headless Chrome
 RUN apt-get update && \
     apt-get install -y wget ca-certificates xvfb \
         libxi6 libnss3 libxss1 libglib2.0-0 && \
@@ -17,4 +17,5 @@ COPY . .
 ENV DISPLAY=:99 \
     PYTHONUNBUFFERED=1
 
-CMD ["sh", "-c", "Xvfb :99 -screen 0 1920x1080x24 & uvicorn app:app --host 0.0.0.0 --port $PORT"]
+# Запуск через Gunicorn (WSGI)
+CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "app:app"]
