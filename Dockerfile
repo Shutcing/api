@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     unzip \
-    jq \ # Добавляем jq для парсинга JSON <--- ДОБАВЛЕН ОБРАТНЫЙ СЛЭШ ЗДЕСЬ
-    # Зависимости для Chrome
+    jq \ # Убедитесь, что здесь НЕТ ничего после обратного слэша, даже пробелов!
+    # --- Комментарий перемещен сюда ---
+    # Зависимости для Chrome:
     libglib2.0-0 \
     libnss3 \
     libgconf-2-4 \
@@ -33,10 +34,11 @@ RUN apt-get update && apt-get install -y \
     # Очистка кэша apt
     && rm -rf /var/lib/apt/lists/*
 
-# --- Остальная часть Dockerfile остается без изменений ---
+# --- Остальная часть Dockerfile ---
+# (Скачивание Chrome, ChromeDriver, установка Python зависимостей, CMD и т.д.)
+# ... (остается как в предыдущем ответе) ...
 
 # Скачиваем и устанавливаем Google Chrome (стабильную версию)
-# ... (как было) ...
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
