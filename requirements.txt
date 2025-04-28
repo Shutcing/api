@@ -1,0 +1,4 @@
+Flask
+selenium
+uvicorn
+# gunicorn, если предпочитаете его
