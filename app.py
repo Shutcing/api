@@ -73,6 +73,8 @@ async def getAnswer(prompt: str, model: str, image_url: str = None) -> str:
             )
         )
 
+        logger.info("Нашли поле ввода")
+
         # Ввод prompt
         textarea = await loop.run_in_executor(
             ThreadPoolExecutor(),
@@ -93,6 +95,8 @@ async def getAnswer(prompt: str, model: str, image_url: str = None) -> str:
             )
         )
 
+        logger.info("Ввели")
+
         # Выбор модели
         select_elem = await loop.run_in_executor(
             ThreadPoolExecutor(),
@@ -106,6 +110,8 @@ async def getAnswer(prompt: str, model: str, image_url: str = None) -> str:
             select_wrapper.select_by_value,
             model
         )
+
+        logger.info("Выбрали модель")
 
         # Ввод URL изображения (если задан)
         if image_url:
@@ -126,6 +132,8 @@ async def getAnswer(prompt: str, model: str, image_url: str = None) -> str:
             "generate-btn"
         )
         await loop.run_in_executor(ThreadPoolExecutor(), button.click)
+
+        logger.info("Отправили форму")
 
         # Работа с shadow DOM для авторизации
         host_element = await loop.run_in_executor(
@@ -155,6 +163,8 @@ async def getAnswer(prompt: str, model: str, image_url: str = None) -> str:
         await loop.run_in_executor(ThreadPoolExecutor(), driver.set_window_position, -1600, -1600)
         await loop.run_in_executor(ThreadPoolExecutor(), driver.switch_to.window, driver.window_handles[0])
 
+        logger.info("началась генерация")
+
         # Ожидание завершения генерации
         await loop.run_in_executor(
             ThreadPoolExecutor(),
@@ -163,6 +173,8 @@ async def getAnswer(prompt: str, model: str, image_url: str = None) -> str:
             )
         )
         await asyncio.sleep(6)
+
+        logger.info("получили результат")
 
         # Получение результата
         answer_element = await loop.run_in_executor(
