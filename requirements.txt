@@ -1,6 +1,2 @@
 Flask
 selenium
-uvicorn
-gunicorn
-webdriver-manager
-# gunicorn, если предпочитаете его
