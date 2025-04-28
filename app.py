@@ -34,16 +34,17 @@ async def getAnswer(prompt: str, model: str, image_url: str = None) -> str:
         chrome_options = Options()
         chrome_options.binary_location = "/usr/bin/google-chrome-stable"
         # chrome_options.add_argument("--headless")
-        # chrome_options.add_argument("--no-sandbox")
-        # chrome_options.add_argument("--disable-dev-shm-usage")
-        # chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-        # chrome_options.add_argument("--enable-logging")
-        # chrome_options.add_argument("--v=1")
-        # chrome_options.add_argument("--disable-gpu")
-        # chrome_options.add_argument(
-        #     "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        #     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-        # )
+        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_argument("--enable-logging")
+        chrome_options.add_argument("--v=1")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument(
+            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+        )
         service = Service(
             ChromeDriverManager().install(),
             log_path="-",               # вывод логов в stderr
