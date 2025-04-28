@@ -1,2 +1,4 @@
-Flask
-selenium
+Flask>=2.0
+selenium>=4.0
+gunicorn>=20.0 # Добавляем Gunicorn
+# Укажите конкретные версии, если это необходимо
