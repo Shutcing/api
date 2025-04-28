@@ -1,29 +1,27 @@
 FROM python:3.11-slim
 
-# Системные зависимости и headless Chrome
+# 1) Устанавливаем Chrome и необходимые пакеты
 RUN apt-get update && \
-    apt-get install -y wget ca-certificates xvfb \
-        libxi6 libnss3 libxss1 libglib2.0-0 && \
-    wget -qO /tmp/chrome.deb \
-        https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-    apt-get install -y /tmp/chrome.deb && \
-    rm /tmp/chrome.deb
+    apt-get install -y \
+      wget ca-certificates xvfb \
+      chromium-driver \
+      google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
 
+# 2) Рабочая директория
 WORKDIR /app
+
+# 3) Python-зависимости
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# 4) Копируем код
 COPY . .
 
+# 5) Переменные окружения
 ENV DISPLAY=:99 \
     PYTHONUNBUFFERED=1
 
-# Debug-вывод версий
-RUN google-chrome --version && chromedriver --version
-
-# Запуск с логированием Xvfb
-CMD sh -c "set -x; \
-           Xvfb :99 -screen 0 1920x1080x24 &>& /tmp/xvfb.log & \
+# 6) Запуск сервера (Gunicorn в shell-форме для подстановки $PORT)
+CMD sh -c "Xvfb :99 -screen 0 1920x1080x24 & \
            gunicorn --bind 0.0.0.0:$PORT app:app"
-
-# Запуск через Gunicorn (WSGI)
-CMD sh -c "gunicorn --bind 0.0.0.0:$PORT app:app"
