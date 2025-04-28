@@ -26,6 +26,8 @@ COPY . .
 ENV DISPLAY=:99 \
     PYTHONUNBUFFERED=1
 
+RUN google-chrome --version && chromedriver --version
+
 # 5) Запуск Xvfb + Gunicorn (shell-форма для подстановки $PORT)
 CMD sh -c "Xvfb :99 -screen 0 1920x1080x24 & \
            gunicorn --bind 0.0.0.0:$PORT app:app"
