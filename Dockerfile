@@ -4,39 +4,10 @@ FROM python:3.10-slim
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Устанавливаем системные зависимости, включая jq
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    unzip \
-    jq \ # Убедитесь, что здесь НЕТ ничего после обратного слэша, даже пробелов!
-    # --- Комментарий перемещен сюда ---
-    # Зависимости для Chrome:
-    libglib2.0-0 \
-    libnss3 \
-    libgconf-2-4 \
-    libfontconfig1 \
-    libx11-6 \
-    libx11-xcb1 \
-    libxcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libcups2 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libgtk-3-0 \
-    # Очистка кэша apt
-    && rm -rf /var/lib/apt/lists/*
+# Устанавливаем системные зависимости, включая jq (ВСЕ В ОДНУ СТРОКУ)
+RUN apt-get update && apt-get install -y wget gnupg unzip jq libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libcups2 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 && rm -rf /var/lib/apt/lists/*
 
-# --- Остальная часть Dockerfile ---
-# (Скачивание Chrome, ChromeDriver, установка Python зависимостей, CMD и т.д.)
-# ... (остается как в предыдущем ответе) ...
+# --- Остальная часть Dockerfile остается без изменений ---
 
 # Скачиваем и устанавливаем Google Chrome (стабильную версию)
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
