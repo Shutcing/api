@@ -8,10 +8,20 @@ from flask import Flask, jsonify, request, Response
 import uuid
 import threading
 import json
+import logging
+
+log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(threadName)s - %(message)s')
+log_handler = logging.StreamHandler(sys.stderr) # Вывод в stderr
+log_handler.setFormatter(log_formatter)
 
 sys.setrecursionlimit(10**9)
 
 app = Flask(__name__)
+app.logger.handlers = [] # Удаляем стандартные обработчики Flask, если они есть
+app.logger.addHandler(log_handler)
+app.logger.setLevel(logging.INFO) # Устанавливаем уровень для логгера Flask
+
+
 app.config['JSON_AS_ASCII'] = False
 
 # Хранилище задач (вместо Redis для простоты)
@@ -80,11 +90,14 @@ async def getAnswer(prompt, model, image_url=None):
 
     async def _async_task():
         with ThreadPoolExecutor() as pool:
+            app.logger.info("Получаем токен и куки")
             token, cookie = signup_user(scraper)
+            app.logger.info(token)
+            app.logger.info(cookie)
             return call_chat(scraper, token, cookie, prompt)["result"]["message"]["content"]
             
 
-
+    app.logger.info("Получили ответ")    
     return await _async_task()
 
 def async_task(task_id, prompt):
@@ -92,6 +105,7 @@ def async_task(task_id, prompt):
     asyncio.set_event_loop(loop)
     try:
         result = loop.run_until_complete(getAnswer(prompt, "gpt-4o"))
+        app.logger.info(result)
         tasks[task_id] = {"status": "completed", "result": result}
     except Exception as e:
         tasks[task_id] = {"status": "error", "error": str(e)}
