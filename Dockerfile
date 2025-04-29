@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # 5. Копируем код вашего приложения в рабочую директорию
-COPY new_app.py .
+COPY app.py .
 
 # 6. Указываем команду для запуска приложения с помощью Gunicorn
 # Render автоматически установит переменную окружения PORT
@@ -24,4 +24,4 @@ COPY new_app.py .
 # new_app:app указывает, что нужно запустить объект 'app' из файла 'new_app.py'
 # --workers 1 : Начнем с одного worker-процесса, что обычно достаточно для небольших планов Render.
 #               Вы можете увеличить это число при необходимости.
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--workers", "1", "new_app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--workers", "1", "app:app"]
