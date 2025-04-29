@@ -46,6 +46,7 @@ def signup_user(scraper):
     )
     resp.raise_for_status()
     token = resp.json()["token"]
+    app.logger.info(token)
     cookie_value = scraper.cookies.get("puter_auth_token")
     if not cookie_value:
         raise RuntimeError("Кука puter_auth_token не найдена")
